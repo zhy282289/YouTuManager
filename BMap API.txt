@@ -1,0 +1,83 @@
+longitude:经度
+latitude:纬度
+
+
+//创建地图
+var map = new BMap.Map("allmap")
+
+//添加地图类型控件
+map.addControl(new BMap.MapTypeControl());   
+
+//创建点
+new BMap.Point(106.486654,29.615467);
+
+
+ //初始化地图,设置城市和地图级别。
+map.centerAndZoom("重庆",12); 
+
+// 设置地图显示的城市 此项是必须设置的
+map.setCurrentCity("北京");          
+
+
+
+var polyline = new BMap.Polyline([pointA,pointB], {strokeColor:"blue", strokeWeight:6, strokeOpacity:0.5});  //定义折线
+map.addOverlay(polyline);     //添加折线到地图上
+
+
+//移动到广州
+map.panTo(new BMap.Point(113.262232,23.154345))
+
+
+//缩放地图
+map.setZoom(14); 
+
+//
+map.panTo(point); 
+
+map.enableScrollWheelZoom(true);
+
+//禁止拖拽
+map.disableDragging();  
+
+//开启拖拽   
+map.enableDragging();   
+
+
+//创建自定义标记
+var pt = new BMap.Point(116.417, 39.909);
+var myIcon = new BMap.Icon("http://developer.baidu.com/map/jsdemo/img/fox.gif", new BMap.Size(300,157));
+var marker = new BMap.Marker(pt,{icon:myIcon});  // 创建标注
+map.addOverlay(marker);              // 将标注添加到地图中
+
+//增加菜单
+var menu = new BMap.ContextMenu();
+var txtMenuItem = [
+	{
+		text:'放大',
+		callback:function(){map.zoomIn()}
+	},
+	{
+		text:'缩小',
+		callback:function(){map.zoomOut()}
+	}
+];
+for(var i=0; i < txtMenuItem.length; i++){
+	menu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+}
+map.addContextMenu(menu);
+	
+	
+	
+//单击获取点击的经纬度
+map.addEventListener("click",function(e){
+	alert(e.point.lng + "," + e.point.lat);
+});
+
+//地图加载完成
+map.addEventListener("tilesloaded",function(){alert("地图加载完毕");});
+
+//鼠标单击事件
+function showInfo(e){
+	alert(e.point.lng + ", " + e.point.lat);
+}
+map.addEventListener("click", showInfo);
