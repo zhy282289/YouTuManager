@@ -3,16 +3,41 @@
 
 #include <QObject>
 
-class type : public QObject
+// ◊¯±Íµ„
+class BPoint
 {
-	Q_OBJECT
-
 public:
-	type(QObject *parent);
-	~type();
+	double lng;
+	double lat;
 
-private:
-	
+	BPoint(){lng=0.0;lat=0.0;}
+	BPoint(double lng, double lat){this->lng=lng;this->lat=lat;}
 };
+
+// Õº∆¨¿‡
+class BPixmap
+{
+public:
+	QString path;
+	QPixmap	img;
+	QString title;
+	QString desc;
+
+	bool isValid() const
+	{
+		return !img.isNull();
+	}
+};
+typedef QList<BPixmap>	BPixmaps;
+
+
+
+
+
+
+
+
+
+
 
 #endif // TYPE_H

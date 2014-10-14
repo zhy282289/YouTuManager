@@ -14,7 +14,8 @@
 #include "commonui.h"
 
 
-
+#include "bablumcontroller.h"
+#include "baidujsmanager.h"
 
 
 

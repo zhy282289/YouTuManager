@@ -2,25 +2,38 @@
 #include "youtumanager.h"
 
 #include "mapwidget.h"
+#include "baidujsmanager.h"
+#include "ablumwidget.h"
 
 YouDuManager::YouDuManager(QWidget *parent, Qt::WFlags flags)
 	: QWidget(parent, flags)
 {
 	
+	setWindowTitle("YouTuManager");
+
+	// init global controller
+	BaiduJsManager::GetInstance();
+	BAblumController::GetInstance();
 
 	// ui
 	m_btnMap = new BtnPrue;
 	m_btnAlbum = new BtnPrue;
 	m_btnLocalAlbum = new BtnPrue;
 	m_btnSetting = new BtnPrue;
+	connect(m_btnMap, SIGNAL(clicked()), this,SLOT(YouTuWidgetChanged()));
+	connect(m_btnAlbum, SIGNAL(clicked()), this,SLOT(YouTuWidgetChanged()));
+	connect(m_btnLocalAlbum, SIGNAL(clicked()), this,SLOT(YouTuWidgetChanged()));
+	connect(m_btnSetting, SIGNAL(clicked()), this,SLOT(YouTuWidgetChanged()));
+
+
 
 	m_centralLayout = new QStackedLayout;
 
 	m_mapWidget = new MapWidget;
-	m_albumWidget = new QWidget;
-	m_localAlbumWidget = new QWidget;
+	m_ablumWidget = new AblumWidget;
+	m_localAblumWidget = new QWidget;
 	m_settingWidget = new QWidget;
-
+	
 	m_stateBar = new QWidget;
 	m_searchBar = new QWidget;
 
@@ -37,8 +50,8 @@ YouDuManager::YouDuManager(QWidget *parent, Qt::WFlags flags)
 
 
 	m_centralLayout->addWidget(m_mapWidget);
-	m_centralLayout->addWidget(m_albumWidget);
-	m_centralLayout->addWidget(m_localAlbumWidget);
+	m_centralLayout->addWidget(m_ablumWidget);
+	m_centralLayout->addWidget(m_localAblumWidget);
 	m_centralLayout->addWidget(m_settingWidget);
 	m_centralLayout->setCurrentIndex(0);
 
@@ -59,5 +72,29 @@ YouDuManager::YouDuManager(QWidget *parent, Qt::WFlags flags)
 
 YouDuManager::~YouDuManager()
 {
+	BaiduJsManager::Release();
+	BAblumController::Release();
+}
 
+void YouDuManager::YouTuWidgetChanged()
+{
+	QWidget *centralWidget = NULL;
+	QObject *obj = sender();
+	if (obj == m_btnMap)
+	{
+		centralWidget = m_mapWidget;
+	}
+	else if (obj == m_btnAlbum)
+	{
+		centralWidget = m_ablumWidget;
+	}
+	else if (obj == m_btnLocalAlbum)
+	{
+		centralWidget = m_localAblumWidget;
+	}
+	else if (obj == m_btnSetting)
+	{
+		centralWidget = m_settingWidget;
+	}
+	m_centralLayout->setCurrentWidget(centralWidget);
 }

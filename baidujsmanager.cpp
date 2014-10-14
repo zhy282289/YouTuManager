@@ -30,7 +30,7 @@ BaiduJsManager* BaiduJsManager::GetInstance()
 	return g_baiduJsManager;
 }
 
-void BaiduJsManager::ReleaseInstance()
+void BaiduJsManager::Release()
 {
 	if (g_baiduJsManager)
 	{

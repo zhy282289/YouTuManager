@@ -12,7 +12,8 @@ int main(int argc, char *argv[])
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("gb10830"));
 	
 	YouDuManager w;
-	w.showNormal();
+	w.showMaximized();
+	
 
 
 	return a.exec();

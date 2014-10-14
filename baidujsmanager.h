@@ -6,6 +6,8 @@
 enum Type_JsEvent{
 	Js_Clicked = 0x1, 
 	Js_MenuContext,
+	Js_MarkerClicked,
+
 };
 
 class BaiduJsManager : public QObject
@@ -25,7 +27,7 @@ public:
 	
 public:
 	static BaiduJsManager* GetInstance();
-	static void ReleaseInstance();
+	static void Release();
 
 	QPixmap getPixmap() const;
 	Q_INVOKABLE	void	_JsEvent(double lng, double lat, int type);

@@ -12,13 +12,12 @@ class MapWidget : public QWebView
 	Q_OBJECT
 
 public:
-	MapWidget(QWidget *parent = 0);
+	MapWidget( QWidget *parent = 0);
 	~MapWidget();
 
 
 private slots:
 	void	LoadFinish();
-	
 	void	JsEvent(double lng, double lat, int type);
 
 private:

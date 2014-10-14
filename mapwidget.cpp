@@ -3,7 +3,7 @@
 
 #include "baidujsmanager.h"
 
-MapWidget::MapWidget(QWidget *parent)
+MapWidget::MapWidget( QWidget *parent)
 	: QWebView(parent)
 {
 	m_webFrame = NULL;
@@ -11,10 +11,8 @@ MapWidget::MapWidget(QWidget *parent)
 	m_manager = BaiduJsManager::GetInstance();
 	connect(m_manager, SIGNAL(JsEvent(double,double,int)), this, SLOT(JsEvent(double,double,int)));
 
-
 	connect(this, SIGNAL(loadFinished(bool)), this, SLOT(LoadFinish()));
 
-	
 }
 
 MapWidget::~MapWidget()
@@ -73,6 +71,16 @@ void MapWidget::JsEvent( double lng, double lat, int type )
 	case Js_MenuContext:
 		{
 			m_webFrame->evaluateJavaScript(m_manager->MarkAblum(lng,lat));
+			BPoint point(lng, lat);
+			BAblumController::GetInstance()->CreateAblum(point, "dafult");
+		}
+		break;
+	case Js_MarkerClicked:
+		{
+
+			//QWidget *w = new QWidget(NULL);
+			//w->resize(300, 500);
+			//w->show();
 		}
 		break;
 	default:
@@ -81,4 +89,5 @@ void MapWidget::JsEvent( double lng, double lat, int type )
 		}
 	}
 }
+
 

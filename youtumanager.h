@@ -12,6 +12,9 @@ public:
 	YouDuManager(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~YouDuManager();
 
+private slots:
+	void YouTuWidgetChanged();
+
 private:
 	QPushButton	*m_btnMap;
 	QPushButton *m_btnAlbum;
@@ -20,8 +23,8 @@ private:
 
 	QStackedLayout	*m_centralLayout;
 	QWidget	*m_mapWidget;
-	QWidget *m_albumWidget;
-	QWidget *m_localAlbumWidget;
+	QWidget *m_ablumWidget;
+	QWidget *m_localAblumWidget;
 	QWidget *m_settingWidget;
 
 	QWidget	*m_stateBar;
