@@ -9,9 +9,9 @@ BaiduJsManager::BaiduJsManager(QObject *parent)
 
 
 
-Q_INVOKABLE void BaiduJsManager::JsEvent( double lng, double lat, int type )
+Q_INVOKABLE void BaiduJsManager::_JsEvent( double lng, double lat, int type )
 {
-	MarkAblum(lng, lat);
+	emit JsEvent(lng, lat, type);
 }
 
 QPixmap BaiduJsManager::getPixmap() const
@@ -37,5 +37,10 @@ void BaiduJsManager::ReleaseInstance()
 		delete g_baiduJsManager;
 		g_baiduJsManager = NULL;
 	}
+}
+
+QString BaiduJsManager::MarkAblum( double lng, double lat )
+{
+	return QString("MarkAblum(%1, %2)").arg(QString::number(lng,'f', 6)).arg(QString::number(lat,'f', 6));
 }
 

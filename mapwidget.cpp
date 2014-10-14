@@ -7,10 +7,14 @@ MapWidget::MapWidget(QWidget *parent)
 	: QWebView(parent)
 {
 	m_webFrame = NULL;
+
+	m_manager = BaiduJsManager::GetInstance();
+	connect(m_manager, SIGNAL(JsEvent(double,double,int)), this, SLOT(JsEvent(double,double,int)));
+
+
 	connect(this, SIGNAL(loadFinished(bool)), this, SLOT(LoadFinish()));
 
-	BaiduJsManager *manager = BaiduJsManager::GetInstance();
-	connect(manager, SIGNAL(MarkAblum(double,double)), this, SLOT(MarkAblum(double,double)));
+	
 }
 
 MapWidget::~MapWidget()
@@ -38,9 +42,8 @@ bool MapWidget::InitMap()
 
 void MapWidget::LoadFinish()
 {
-	BaiduJsManager *manager = BaiduJsManager::GetInstance();
 	m_webFrame = this->page()->mainFrame();
-	m_webFrame->addToJavaScriptWindowObject("BaiduJsManager", manager);
+	m_webFrame->addToJavaScriptWindowObject("BaiduJsManager", m_manager);
 }
 
 void MapWidget::showEvent( QShowEvent *event )
@@ -53,12 +56,29 @@ void MapWidget::showEvent( QShowEvent *event )
 
 void MapWidget::mousePressEvent( QMouseEvent *event )
 {
-	//m_webFrame->evaluateJavaScript("MarkAblum('1', '2')");
 	QWebView::mousePressEvent(event);
 }
 
-void MapWidget::MarkAblum( double lng, double lat )
+
+
+void MapWidget::JsEvent( double lng, double lat, int type )
 {
-	m_webFrame->evaluateJavaScript(QString("MarkAblum(%1, %2)").arg(QString::number(lng,'f', 6)).arg(QString::number(lat,'f', 6)));
+	switch (type)
+	{
+	case Js_Clicked:
+		{
+
+		}
+		break;
+	case Js_MenuContext:
+		{
+			m_webFrame->evaluateJavaScript(m_manager->MarkAblum(lng,lat));
+		}
+		break;
+	default:
+		{
+
+		}
+	}
 }
 

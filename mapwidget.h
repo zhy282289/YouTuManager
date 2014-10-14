@@ -3,7 +3,10 @@
 
 #include <QWidget>
 
+
+
 class BaiduWebView;
+class BaiduJsManager;
 class MapWidget : public QWebView
 {
 	Q_OBJECT
@@ -15,9 +18,12 @@ public:
 
 private slots:
 	void	LoadFinish();
-	void	MarkAblum(double lng, double lat);
+	
+	void	JsEvent(double lng, double lat, int type);
+
 private:
 	bool	InitMap();
+
 
 protected:
 	void	showEvent(QShowEvent *event);
@@ -25,6 +31,7 @@ protected:
 
 private:
 	QWebFrame	*m_webFrame;
+	BaiduJsManager *m_manager;
 };
 
 

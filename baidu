@@ -27,7 +27,7 @@
         setMapEvent();//设置地图事件
         addMapControl();//向地图添加控件
         
-        
+        addQtEvent();
     }
     
     //创建地图函数：
@@ -46,9 +46,9 @@
         map.enableDoubleClickZoom();//启用鼠标双击放大，默认启用(可不写)
         map.enableKeyboard();//启用键盘上下左右键移动地图
         
-        //初始化与qt的交互
+       
 
-				map.addEventListener("click",  function showInfo(e){BaiduJsManager.JsEvent(e.point.lng, e.point.lat, 1);});
+		
 				
     }
     
@@ -59,7 +59,31 @@
 			map.addControl(ctrl_sca);
     }
     
-    
+    // 新增加事件 初始化与qt的交互
+	function addQtEvent(){
+	
+		map.addEventListener("click",  function showInfo(e){BaiduJsManager._JsEvent(e.point.lng, e.point.lat, 1);});
+		
+		//增加菜单
+		var menu = new BMap.ContextMenu();
+		var txtMenuItem = [
+			{
+				text:'Creat Ablum',
+				callback:function(p){BaiduJsManager._JsEvent(p.lng, p.lat, 2);}
+			},
+			{
+				text:'创建相册',
+				callback:function(){map.zoomOut()}
+			}
+		];
+		for(var i=0; i < txtMenuItem.length; i++){
+				menu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+		}
+		map.addContextMenu(menu);
+		
+		//
+	}
+	
     initMap();//创建和初始化地图
     
     
@@ -74,11 +98,17 @@
 			var myIcon = new BMap.Icon("E:/works/YouDuManager/Resources/market.png", new BMap.Size(25,50));
 			var marker = new BMap.Marker(pt,{icon:myIcon});  // 创建标注
 			
+			var menu = new BMap.ContextMenu();
+			menu.addItem(new BMap.MenuItem("Open", function(){alert("open");}, 150));
+			
 			map.addOverlay(marker);              // 将标注添加到地图中
 
 			var marker2 = new BMap.Marker(pt);  // 创建标注
+			//marker2.addContextMenu(menu);
+			marker2.addEventListener("click", function(){alert("fff")});
 			map.addOverlay(marker2);              // 将标注添加到地图中
     }
     
+	
 </script>
 </html>
