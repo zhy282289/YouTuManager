@@ -2,24 +2,17 @@
 #include "ablummanagerwidget.h"
 
 AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
-	: QScrollArea(parent)
+	: QWidget(parent)
 	, m_ablum(ablum)
 	, m_viewType(Larger)
 {
-	resize(1000, 765);
+	//resize(1000, 765);
 	m_itemw = 300;
 
-	BPixmaps pixmaps = m_ablum->GetImages();
-	for (int i = 0; i < pixmaps.size(); ++i)
-	{
-		if (pixmaps.at(i).isValid())
-		{
-			QLabel *lb = new QLabel(this);
-			lb->setPixmap(pixmaps.at(i).img);
-			m_items.push_back(lb);
-		}
 
-	}
+	m_area = new QScrollArea(this);
+	m_pixmapView = new PixmapVeiw;
+	m_area->setWidget(m_pixmapView);
 
 	m_btnAdd = new QPushButton(this);
 	m_btnRemove = new QPushButton(this);
@@ -42,17 +35,28 @@ AblumManagerWidget::~AblumManagerWidget()
 
 void AblumManagerWidget::showEvent( QShowEvent *event )
 {
-	//QScrollArea::showEvent(event);
+	//BPixmaps pixmaps = m_ablum->GetImages();
+	//for (int i = 0; i < pixmaps.size(); ++i)
+	//{
+	//	if (pixmaps.at(i).isValid())
+	//	{
+	//		m_pixmapView->AddPixmap(pixmaps.at(i).img);
+	//	}
+
+	//}
+	//QWidget::showEvent(event);
 }
 
 void AblumManagerWidget::resizeEvent( QResizeEvent *event )
 {
 	Update(m_viewType);
+	QWidget::resizeEvent(event);
 }
 
 void AblumManagerWidget::Update(int type)
 {
 	int w = rect().width();
+	int h = rect().height();
 	const int margins = 10;
 	int left = margins;
 	int top = margins;
@@ -64,30 +68,40 @@ void AblumManagerWidget::Update(int type)
 	m_btnRemove->setGeometry(left, top, btnw, btnh);
 	left = m_btnRemove->geometry().right() + margins;
 	m_btnClear->setGeometry(left, top, btnw, btnh);
-
-	if (type == Larger)
-	{
-		m_itemw = 300;
-	}
-	else 
-	{
-		m_itemw = 70;
-	}
-
 	left = margins;
 	top = m_btnAdd->geometry().bottom() + margins;
-	for (int i = 0; i < m_items.size(); ++i)
-	{
-		QWidget *item = m_items.at(i);
-		item->setGeometry(left, top, m_itemw, m_itemw);
-		item->show();
-		left += m_itemw + 10;
-		if (left + m_itemw >= w)
-		{
-			left = margins;
-			top += m_itemw + margins;
-		}
-	}
+	m_area->setGeometry(left, top, w - 2*margins, h - top - 3*margins);
+
+
+	//if (type == Larger)
+	//{
+	//	m_itemw = 300;
+	//}
+	//else 
+	//{
+	//	m_itemw = 70;
+	//}
+
+	//left = margins;
+	//top = m_btnAdd->geometry().bottom() + margins;
+
+
+	//for (int i = 0; i < m_items.size(); ++i)
+	//{
+	//	QWidget *item = m_items.at(i);
+	//	item->setGeometry(left, top, m_itemw, m_itemw);
+	//	item->show();
+	//	left += m_itemw + 10;
+	//	if (left + m_itemw >= w)
+	//	{
+	//		left = margins;
+	//		top += m_itemw + margins;
+	//	}
+	//}
+	//if (top > h)
+	//{
+	//	resize(w, top + m_itemw + margins);
+	//}
 }
 
 void AblumManagerWidget::BtnClicked()
@@ -122,20 +136,69 @@ void AblumManagerWidget::BtnClicked()
 
 void AblumManagerWidget::OneImgReady()
 {
-
-	qDeleteAll(m_items);
-	m_items.clear();
 	BPixmaps pixmaps = m_ablum->GetImages();
 	for (int i = 0; i < pixmaps.size(); ++i)
 	{
 		if (pixmaps.at(i).isValid())
 		{
-			QLabel *lb = new QLabel(this);
-			lb->setPixmap(pixmaps.at(i).img);
-			m_items.push_back(lb);
+			m_pixmapView->AddPixmap(pixmaps.at(i).img);
 		}
 
 	}
+}
 
-	Update(m_viewType);
+//////////////////////////////////////////////////////////////////////////
+PixmapVeiw::PixmapVeiw( QWidget *parent /*= 0*/ )
+	:QWidget(parent)
+{
+	m_itemw = 200;
+}
+
+void PixmapVeiw::AddPixmap( const QPixmap &pixmap )
+{
+	QLabel *lb = new QLabel(this);
+	lb->setPixmap(pixmap);
+	m_items.push_back(lb);
+	Update(0);
+}
+
+void PixmapVeiw::resizeEvent( QResizeEvent *event )
+{
+	QWidget::resizeEvent(event);
+}
+
+void PixmapVeiw::Update( int type )
+{
+	if (type == Larger)
+	{
+		m_itemw = 200;
+	}
+	else
+	{
+		m_itemw = 70;
+	}
+
+	const int margins = 10;
+	int w = rect().width();
+	int h = rect().height();
+
+	int left = margins;
+	int top = 0;
+
+	for (int i = 0; i < m_items.size(); ++i)
+	{
+		QWidget *item = m_items.at(i);
+		item->setGeometry(left, top, m_itemw, m_itemw);
+		item->show();
+		left += m_itemw + 10;
+		if (left + m_itemw >= w)
+		{
+			left = margins;
+			top += m_itemw + margins;
+		}
+	}
+	if (top > h)
+	{
+		resize(w, top + m_itemw + margins);
+	}
 }

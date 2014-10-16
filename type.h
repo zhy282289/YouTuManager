@@ -34,7 +34,8 @@ typedef QList<BPixmap>	BPixmaps;
 
 
 
-
+//const int PixViewType_Large = 150;
+//const int PixViewType_Small = 150;
 
 
 

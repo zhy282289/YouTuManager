@@ -3,12 +3,14 @@
 
 #include <QWidget>
 
+enum ViewType{Larger, Small};
 
 
-class AblumManagerWidget : public /*QWidget*/QScrollArea
+class PixmapVeiw;
+class AblumManagerWidget : public QWidget
 {
 	Q_OBJECT
-	enum ViewType{Larger, Small};
+	
 
 public:
 	AblumManagerWidget(BAblum *ablum,  QWidget *parent);
@@ -30,12 +32,31 @@ private:
 	QPushButton	*m_btnRemove;
 	QPushButton	*m_btnClear;
 
-	QList<QLabel*>	m_items;
-
 	BAblum	*m_ablum;
 
 	int		m_itemw;
 	int		m_viewType;
+
+	QScrollArea	*m_area;
+	PixmapVeiw	*m_pixmapView;
+};
+
+class PixmapVeiw : public QWidget
+{
+	Q_OBJECT
+public:
+	PixmapVeiw(QWidget *parent = 0);
+
+	void AddPixmap(const QPixmap &pixmap);
+	void Update(int type);
+
+protected:
+	void resizeEvent(QResizeEvent *event);
+
+private:
+	QList<QLabel*>	m_items;
+	int		m_itemw;
+
 };
 
 #endif // ABLUMMANAGERWIDGET_H

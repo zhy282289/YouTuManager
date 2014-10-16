@@ -104,10 +104,10 @@ QSize AblumWidgetItem::Size()
 void AblumWidgetItem::mousePressEvent( QMouseEvent *event )
 {
 
-	QWidget *w = new AblumManagerWidget(m_ablum, NULL);
-	//w->showMaximized();
-	QScrollArea *area = new QScrollArea;
-	area->setWidget(w);
-	area->showMaximized();
+
+	QWidget *w = new AblumManagerWidget(m_ablum, 0);
+	w->showMaximized();
+
+
 	QWidget::mousePressEvent(event);
 }

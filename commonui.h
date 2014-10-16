@@ -31,6 +31,22 @@ public:
 
 
 
+class AblumAreaWidget : public QScrollArea
+{
+	Q_OBJECT
+public:
+	AblumAreaWidget(QWidget *parent = 0);
+
+	void SetWidget(QWidget *widget);
+
+protected:
+	void resizeEvent(QResizeEvent *event);
+
+private:
+
+	QWidget	*m_widget;
+
+};
 
 
 
