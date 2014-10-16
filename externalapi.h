@@ -10,7 +10,7 @@ QSize GetScreenSize();
 
 
 
-
+QString GetSettingPath();
 
 
 

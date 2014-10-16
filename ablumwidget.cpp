@@ -89,10 +89,10 @@ void AblumWidgetItem::Update()
 QPixmap AblumWidgetItem::GetFirstPixmap()
 {
 	QPixmap pixmap;
-	if (!m_ablum->GetImages().isEmpty())
-	{
-		pixmap = m_ablum->GetImages().at(0).img;
-	}
+	//if (!m_ablum->GetImages().isEmpty())
+	//{
+	//	pixmap = QPixmap::fromImage(m_ablum->GetImages().at(0).img);
+	//}
 	return pixmap;
 }
 
@@ -103,11 +103,8 @@ QSize AblumWidgetItem::Size()
 
 void AblumWidgetItem::mousePressEvent( QMouseEvent *event )
 {
+	
+	AblumManagerWidget *ablumManagerWidget = new AblumManagerWidget(m_ablum, this);
+	ablumManagerWidget->showMaximized();
 
-
-	QWidget *w = new AblumManagerWidget(m_ablum, 0);
-	w->showMaximized();
-
-
-	QWidget::mousePressEvent(event);
 }

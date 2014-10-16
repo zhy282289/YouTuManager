@@ -6,12 +6,10 @@
 enum ViewType{Larger, Small};
 
 
-class PixmapVeiw;
-class AblumManagerWidget : public QWidget
+class AblumManagerView;
+class AblumManagerWidget : public QDialog
 {
 	Q_OBJECT
-	
-
 public:
 	AblumManagerWidget(BAblum *ablum,  QWidget *parent);
 	~AblumManagerWidget();
@@ -20,12 +18,13 @@ public:
 protected:
 	void showEvent(QShowEvent *event);
 	void resizeEvent(QResizeEvent *event);
+	void paintEvent(QPaintEvent *event);
 
 	void Update(int type);
 
 private slots:
 	void BtnClicked();
-	void OneImgReady();
+	void OneImgReady(BPixmap *pixmap);
 
 private:
 	QPushButton	*m_btnAdd;
@@ -33,30 +32,31 @@ private:
 	QPushButton	*m_btnClear;
 
 	BAblum	*m_ablum;
-
-	int		m_itemw;
 	int		m_viewType;
 
 	QScrollArea	*m_area;
-	PixmapVeiw	*m_pixmapView;
+	AblumManagerView	*m_pixmapView;
+
+	QString	m_pixmapDir;
 };
 
-class PixmapVeiw : public QWidget
+class AblumManagerView : public QWidget
 {
 	Q_OBJECT
 public:
-	PixmapVeiw(QWidget *parent = 0);
+	AblumManagerView(QWidget *parent = 0);
 
-	void AddPixmap(const QPixmap &pixmap);
+	void AddPixmap(const QImage &pixmap);
 	void Update(int type);
 
 protected:
 	void resizeEvent(QResizeEvent *event);
+	void paintEvent(QPaintEvent *event);
 
 private:
 	QList<QLabel*>	m_items;
 	int		m_itemw;
-
+	int		m_viewType;
 };
 
 #endif // ABLUMMANAGERWIDGET_H

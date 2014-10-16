@@ -19,7 +19,7 @@ class BPixmap
 {
 public:
 	QString path;
-	QPixmap	img;
+	QImage	img;
 	QString title;
 	QString desc;
 
@@ -34,8 +34,8 @@ typedef QList<BPixmap>	BPixmaps;
 
 
 
-//const int PixViewType_Large = 150;
-//const int PixViewType_Small = 150;
+const int PixViewType_Large = 200;
+const int PixViewType_Small = 150;
 
 
 

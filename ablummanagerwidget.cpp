@@ -2,16 +2,21 @@
 #include "ablummanagerwidget.h"
 
 AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
-	: QWidget(parent)
+	: QDialog(parent)
 	, m_ablum(ablum)
-	, m_viewType(Larger)
 {
-	//resize(1000, 765);
-	m_itemw = 300;
+	setWindowModality(Qt::WindowModal);
+	setAttribute(Qt::WA_DeleteOnClose);
+
+
+	m_viewType = Larger;
+
+	QSettings settings(GetSettingPath(), QSettings::IniFormat);
+	m_pixmapDir = settings.value("AblumManagerWidget_pixmapDir").toString();
 
 
 	m_area = new QScrollArea(this);
-	m_pixmapView = new PixmapVeiw;
+	m_pixmapView = new AblumManagerView;
 	m_area->setWidget(m_pixmapView);
 
 	m_btnAdd = new QPushButton(this);
@@ -24,33 +29,36 @@ AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
 	m_btnRemove->setStyleSheet("background-color:blue;");
 	m_btnClear->setStyleSheet("background-color:blue;");
 
-	connect(ablum, SIGNAL(OneImgReady(int)), this, SLOT(OneImgReady()));
-	connect(ablum, SIGNAL(ImgReadyFinish()), this, SLOT(OneImgReady()));
+	
+	connect(ablum, SIGNAL(OneImgReady(BPixmap*)), this, SLOT(OneImgReady(BPixmap*)), Qt::QueuedConnection);
+
+	BPixmaps pixmaps = m_ablum->GetImages();
+	for (int i = 0; i < pixmaps.size(); ++i)
+	{
+		if (pixmaps.at(i).isValid())
+		{
+			m_pixmapView->AddPixmap(pixmaps.at(i).img);
+		}
+
+	}
 }
 
 AblumManagerWidget::~AblumManagerWidget()
 {
-
+	QString path = GetSettingPath();
+	QSettings settings(GetSettingPath(), QSettings::IniFormat);
+	settings.setValue("AblumManagerWidget_pixmapDir", m_pixmapDir);
 }
 
 void AblumManagerWidget::showEvent( QShowEvent *event )
 {
-	//BPixmaps pixmaps = m_ablum->GetImages();
-	//for (int i = 0; i < pixmaps.size(); ++i)
-	//{
-	//	if (pixmaps.at(i).isValid())
-	//	{
-	//		m_pixmapView->AddPixmap(pixmaps.at(i).img);
-	//	}
-
-	//}
-	//QWidget::showEvent(event);
+	Update(m_viewType);
 }
 
 void AblumManagerWidget::resizeEvent( QResizeEvent *event )
 {
 	Update(m_viewType);
-	QWidget::resizeEvent(event);
+	
 }
 
 void AblumManagerWidget::Update(int type)
@@ -71,37 +79,8 @@ void AblumManagerWidget::Update(int type)
 	left = margins;
 	top = m_btnAdd->geometry().bottom() + margins;
 	m_area->setGeometry(left, top, w - 2*margins, h - top - 3*margins);
-
-
-	//if (type == Larger)
-	//{
-	//	m_itemw = 300;
-	//}
-	//else 
-	//{
-	//	m_itemw = 70;
-	//}
-
-	//left = margins;
-	//top = m_btnAdd->geometry().bottom() + margins;
-
-
-	//for (int i = 0; i < m_items.size(); ++i)
-	//{
-	//	QWidget *item = m_items.at(i);
-	//	item->setGeometry(left, top, m_itemw, m_itemw);
-	//	item->show();
-	//	left += m_itemw + 10;
-	//	if (left + m_itemw >= w)
-	//	{
-	//		left = margins;
-	//		top += m_itemw + margins;
-	//	}
-	//}
-	//if (top > h)
-	//{
-	//	resize(w, top + m_itemw + margins);
-	//}
+	m_pixmapView->setGeometry(left, top, w - 2*margins - 20, h - top - 3*margins);
+	m_pixmapView->Update(m_viewType);
 }
 
 void AblumManagerWidget::BtnClicked()
@@ -109,17 +88,19 @@ void AblumManagerWidget::BtnClicked()
 	QObject *obj = sender();
 	if (obj == m_btnAdd)
 	{
-		QStringList paths = QFileDialog::getOpenFileNames(this, "Ñ¡ÔñÍ¼Æ¬");
+		QStringList paths = QFileDialog::getOpenFileNames(this, "Ñ¡ÔñÍ¼Æ¬", m_pixmapDir);
 		if (!paths.isEmpty())
 		{
-			BPixmap pixmap;
+			BPixmaps pixmaps;
 			foreach(const QString &path, paths)
 			{
+				BPixmap pixmap;
 				pixmap.path = path;
 				pixmap.title = QFileInfo(path).completeBaseName();
-				m_ablum->AddImage(pixmap);
+				pixmaps.push_back(pixmap);
 			}
-			m_ablum->LoadImgs();
+			m_ablum->AddImages(pixmaps);
+			m_pixmapDir = QFileInfo(paths.at(0)).absolutePath();
 		}
 	}
 	else if (obj == m_btnRemove)
@@ -134,48 +115,52 @@ void AblumManagerWidget::BtnClicked()
 	
 }
 
-void AblumManagerWidget::OneImgReady()
+void AblumManagerWidget::OneImgReady(BPixmap *pixmap)
 {
-	BPixmaps pixmaps = m_ablum->GetImages();
-	for (int i = 0; i < pixmaps.size(); ++i)
+	if (pixmap->isValid())
 	{
-		if (pixmaps.at(i).isValid())
-		{
-			m_pixmapView->AddPixmap(pixmaps.at(i).img);
-		}
-
+		m_pixmapView->AddPixmap(pixmap->img);
+		m_pixmapView->Update(m_viewType);
 	}
 }
 
+void AblumManagerWidget::paintEvent( QPaintEvent *event )
+{
+	//QPainter painter(this);
+	//painter.fillRect(rect(), QBrush(Qt::black));
+}
+
 //////////////////////////////////////////////////////////////////////////
-PixmapVeiw::PixmapVeiw( QWidget *parent /*= 0*/ )
+AblumManagerView::AblumManagerView( QWidget *parent /*= 0*/ )
 	:QWidget(parent)
 {
-	m_itemw = 200;
+	m_itemw = PixViewType_Large;
+	m_viewType = Larger;
 }
 
-void PixmapVeiw::AddPixmap( const QPixmap &pixmap )
+void AblumManagerView::AddPixmap( const QImage &pixmap )
 {
 	QLabel *lb = new QLabel(this);
-	lb->setPixmap(pixmap);
+	lb->hide();
+	lb->setPixmap(QPixmap::fromImage(pixmap));
 	m_items.push_back(lb);
-	Update(0);
 }
 
-void PixmapVeiw::resizeEvent( QResizeEvent *event )
+void AblumManagerView::resizeEvent( QResizeEvent *event )
 {
 	QWidget::resizeEvent(event);
 }
 
-void PixmapVeiw::Update( int type )
+void AblumManagerView::Update( int type )
 {
+	
 	if (type == Larger)
 	{
-		m_itemw = 200;
+		m_itemw = PixViewType_Large;
 	}
 	else
 	{
-		m_itemw = 70;
+		m_itemw = PixViewType_Small;
 	}
 
 	const int margins = 10;
@@ -183,7 +168,7 @@ void PixmapVeiw::Update( int type )
 	int h = rect().height();
 
 	int left = margins;
-	int top = 0;
+	int top = margins;
 
 	for (int i = 0; i < m_items.size(); ++i)
 	{
@@ -201,4 +186,10 @@ void PixmapVeiw::Update( int type )
 	{
 		resize(w, top + m_itemw + margins);
 	}
+}
+
+void AblumManagerView::paintEvent( QPaintEvent *event )
+{
+	//QPainter painter(this);
+	//painter.fillRect(rect(), QBrush(Qt::black));
 }
