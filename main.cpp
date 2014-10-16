@@ -2,6 +2,7 @@
 #include "youtumanager.h"
 #include <QtGui/QApplication>
 
+#include "ablumviewer.h"
 
 Q_IMPORT_PLUGIN(qcncodecs)
 
@@ -14,7 +15,5 @@ int main(int argc, char *argv[])
 	YouDuManager w;
 	w.showMaximized();
 	
-
-
 	return a.exec();
 }

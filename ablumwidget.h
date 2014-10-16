@@ -14,7 +14,8 @@ public:
 	AblumWidget(QWidget *parent = 0);
 	~AblumWidget();
 
-
+protected:
+	void	resizeEvent(QResizeEvent *event);
 
 private slots:
 	void AddAblumItem(BAblum *ablum);
@@ -24,8 +25,10 @@ private slots:
 
 private:
 	QList<AblumWidgetItem*>	m_items;
-
 	BAblumController	*m_ablumController;
+	
+	int	m_hspace;
+	int m_vspace;
 };
 
 
@@ -35,8 +38,11 @@ class AblumWidgetItem : public QWidget
 	Q_OBJECT
 public:
 	AblumWidgetItem(BAblum *ablum, QWidget *parent = 0);
-
 	void Update();
+	QSize Size();
+
+protected:
+	void mousePressEvent(QMouseEvent *event);
 
 private:
 	QPixmap	GetFirstPixmap();

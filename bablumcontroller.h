@@ -18,13 +18,16 @@ public:
 	QString		GetTitle();
 	void		LoadImgs();
 
+	void		AddImage(const BPixmap &pixmap);
+
 public:
 signals:
 	void	OneImgReady(int index);
+	void	ImgReadyFinish();
 
-	private slots:
-		void	ImageResultReady(int index);
-		void	Finished();
+private slots:
+	void	ImageResultReady(int index);
+	void	Finished();
 
 private:
 	BPixmaps		m_images;		// ͼƬ

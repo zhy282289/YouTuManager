@@ -49,7 +49,7 @@ void BAblum::ImageResultReady( int index )
 
 void BAblum::Finished()
 {
-
+	emit ImgReadyFinish();
 }
 
 bool BAblum::HitHint( const BPoint &point ) const
@@ -65,6 +65,11 @@ BPixmaps& BAblum::GetImages()
 QString BAblum::GetTitle()
 {
 	return m_title;
+}
+
+void BAblum::AddImage( const BPixmap &pixmap )
+{
+	m_images.push_back(pixmap);
 }
 
 //////////////////////////////////////////////////////////////////////////
