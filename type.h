@@ -22,11 +22,12 @@ public:
 	QImage	img;
 	QString title;
 	QString desc;
-
+	
 	bool isValid() const
 	{
 		return !img.isNull();
 	}
+
 };
 typedef QList<BPixmap>	BPixmaps;
 

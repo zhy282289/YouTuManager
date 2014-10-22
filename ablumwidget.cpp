@@ -103,8 +103,10 @@ QSize AblumWidgetItem::Size()
 
 void AblumWidgetItem::mousePressEvent( QMouseEvent *event )
 {
-	
-	AblumManagerWidget *ablumManagerWidget = new AblumManagerWidget(m_ablum, this);
-	ablumManagerWidget->showMaximized();
+	AblumManagerWidget ablumManagerWidget(m_ablum, this);
+	ablumManagerWidget.exec();
+
+	//AblumManagerWidget *ablumManagerWidget = new AblumManagerWidget(m_ablum, this);
+	//ablumManagerWidget->showMaximized();
 
 }

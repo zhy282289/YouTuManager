@@ -14,19 +14,20 @@ public:
 
 	bool		HitHint(const BPoint &point) const;
 	BPixmaps&	GetImages();
+	BPixmap&	GetImage(unsigned index);
 	BPoint		GetBPoint();
 	QString		GetTitle();
-	void		LoadImgs();
-
-	//void		AddImage(const BPixmap &pixmap);
-	void		AddImages(const BPixmaps &pixmap);
+	void		LoadImgs(const BPixmaps &pixmaps);
+	void		StopLoadImgs();
+	void		PauseLoadImgs();
+	void		ContinueLoadImgs();
 public:
 signals:
 	void	OneImgReady(BPixmap *pixmap);
 
 private slots:
 	void	SlotOneImgReady(BPixmap *pixmap);
-
+	void	SlotResultReadyAt(int index);
 private:
 	BPixmaps		m_images;		// 图片
 	QString			m_title;		// 相册名称
@@ -34,7 +35,7 @@ private:
 	bool			m_hadLoad;		// 是否加载完图片
 
 private:
-	
+	QFutureWatcher<BPixmap>	*m_futureWatcher;
 };
 
 typedef QList<BAblum*> BAblums;
@@ -57,7 +58,7 @@ signals:
 
 private:
 	BAblumController(QObject *parent = 0);
-
+	~BAblumController();
 
 
 private:
@@ -71,15 +72,17 @@ class LoadImageThread : public QThread
 {
 	Q_OBJECT
 public:
-	LoadImageThread( const BPixmaps &pixmaps);
+	LoadImageThread(QObject *parent);
+
+	void SetBPixmap(const QString &path);
 
 signals:
-	void OneImageReady(BPixmap*);
+	void OneImageReady(QImage*);
 protected:
 	void run();
 
 private:
-	BPixmaps m_pixmaps;
+	QString m_path;
 };
 
 #endif // BABLUMCONTROLLER_H

@@ -2,13 +2,13 @@
 #include "bablumcontroller.h"
 
 
-//void _LoadImage(BPixmap &pixmap)
-//{
-//	if (!pixmap.isValid())
-//	{
-//		pixmap.img = QPixmap::fromImage(QImage(pixmap.path));
-//	}
-//}
+BPixmap _LoadImage(const BPixmap &pixmap)
+{
+	BPixmap temp = pixmap;
+	QImage img(pixmap.path);
+	temp.img = img.scaled(QSize(PixViewType_Large, PixViewType_Large), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	return temp;
+}
 
 
 
@@ -19,6 +19,11 @@ BAblum::BAblum( const BPoint &point, QString title, QObject *parent )
 	m_title = title;
 
 	m_hadLoad = false;
+
+	m_futureWatcher = new QFutureWatcher<BPixmap>(this);
+	connect(m_futureWatcher, SIGNAL(resultReadyAt(int)), this, SLOT(SlotResultReadyAt(int)));
+
+	
 }
 
 
@@ -29,12 +34,12 @@ BPoint BAblum::GetBPoint()
 	return m_point;
 }
 
-void BAblum::LoadImgs()
+void BAblum::LoadImgs(const BPixmaps &pixmaps)
 {
-	//if (!m_futureWatcher->isRunning())
-	//{
-	//	m_futureWatcher->setFuture(QtConcurrent::map(m_images, _LoadImage));
-	//}
+	if (!m_futureWatcher->isRunning())
+	{
+		m_futureWatcher->setFuture(QtConcurrent::mapped(pixmaps, _LoadImage));
+	}
 }
 
 
@@ -54,27 +59,13 @@ QString BAblum::GetTitle()
 	return m_title;
 }
 
-//void BAblum::AddImage( const BPixmap &pixmap )
-//{
-//	//BPixmap temp = pixmap;
-//	//QImage img = QImage(temp.path);
-//	//temp.img = QPixmap::fromImage(img).scaled(QSize(PixViewType_Large, PixViewType_Large), Qt::KeepAspectRatio);
-//	//m_images.push_back(temp);
-//	//emit OneImgReady(&m_images.last());
-//}
 
-void BAblum::AddImages( const BPixmaps &pixmaps )
+void BAblum::StopLoadImgs()
 {
-	LoadImageThread *th = new LoadImageThread(pixmaps);
-	connect(th, SIGNAL(OneImageReady(BPixmap*)), this, SLOT(SlotOneImgReady(BPixmap*)));
-	connect(th, SIGNAL(finished()), th, SLOT(deleteLater()));
-	th->start();
-	//for (int i = 0; i < pixmaps.size(); ++i)
-	//{
-	//	AddImage(pixmaps.at(i));
-	//	QApplication::processEvents();
-	//	
-	//}
+	if (m_futureWatcher->isRunning() || m_futureWatcher->isPaused())
+	{
+		m_futureWatcher->cancel();
+	}
 }
 
 void BAblum::SlotOneImgReady( BPixmap *pixmap )
@@ -83,11 +74,50 @@ void BAblum::SlotOneImgReady( BPixmap *pixmap )
 	emit OneImgReady(pixmap);
 }
 
+
+
+BPixmap& BAblum::GetImage( unsigned index )
+{
+	Q_ASSERT(index < m_images.size());
+	return m_images[index];
+}
+
+void BAblum::SlotResultReadyAt( int index )
+{
+	BPixmap temp = m_futureWatcher->resultAt(index);
+	m_images.push_back(temp);
+	emit OneImgReady(&m_images.last());
+}
+
+void BAblum::PauseLoadImgs()
+{
+	if (m_futureWatcher->isRunning())
+	{
+		m_futureWatcher->pause();
+	}
+}
+
+void BAblum::ContinueLoadImgs()
+{
+	if (m_futureWatcher->isPaused())
+	{
+		m_futureWatcher->resume();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 BAblumController::BAblumController( QObject *parent /*= 0*/ )
 	:QObject(parent)
 {
 
+}
+
+BAblumController::~BAblumController()
+{
+	for (int i = 0; i < m_BAblums.size(); ++i)
+	{
+		m_BAblums.at(i)->StopLoadImgs();
+	}
 }
 
 
@@ -136,26 +166,31 @@ BAblums* BAblumController::GetAllAblum()
 	return &m_BAblums;
 }
 
-LoadImageThread::LoadImageThread( const BPixmaps &pixmaps )
-	:QThread(NULL)
-	,m_pixmaps(pixmaps)
+LoadImageThread::LoadImageThread( QObject *parent)
+	:QThread(parent)
 {
 	
 }
 
 void LoadImageThread::run()
-{
-	for (int i = 0; i < m_pixmaps.size(); ++i)
+{		
+	Q_ASSERT(!m_path.isEmpty());
+
+	QImage *img = new QImage;
+	if (img->load(m_path))
 	{
-		BPixmap &pixmap = m_pixmaps[i];
-		if (!pixmap.isValid())
-		{
-			QImage img;
-			if (img.load(pixmap.path))
-			{
-				pixmap.img = img.scaled(QSize(PixViewType_Large, PixViewType_Large), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-				emit OneImageReady(&pixmap);
-			}
-		}
+		//*img = img->scaled(QSize(PixViewType_Large, PixViewType_Large), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		emit OneImageReady(img);
 	}
+	else
+	{
+		delete img;
+	}
+	
+	
+}
+
+void LoadImageThread::SetBPixmap( const QString &path )
+{
+	m_path = path;
 }

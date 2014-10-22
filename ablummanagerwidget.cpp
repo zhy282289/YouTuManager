@@ -1,14 +1,17 @@
 #include "stdafx.h"
 #include "ablummanagerwidget.h"
+#include "ablumviewer.h"
 
 AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
 	: QDialog(parent)
 	, m_ablum(ablum)
 {
-	setWindowModality(Qt::WindowModal);
-	setAttribute(Qt::WA_DeleteOnClose);
 
-
+	//setAttribute(Qt::WA_DeleteOnClose);
+	setWindowModality(Qt::ApplicationModal);
+	//setWindowFlags(Qt::FramelessWindowHint);
+	resize(GetMainWidget()->rect().size());
+	move(0,0);
 	m_viewType = Larger;
 
 	QSettings settings(GetSettingPath(), QSettings::IniFormat);
@@ -18,6 +21,8 @@ AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
 	m_area = new QScrollArea(this);
 	m_pixmapView = new AblumManagerView;
 	m_area->setWidget(m_pixmapView);
+	connect(m_pixmapView, SIGNAL(ItemClicked(int)), this, SLOT(ItemClicked(int)));
+
 
 	m_btnAdd = new QPushButton(this);
 	m_btnRemove = new QPushButton(this);
@@ -30,7 +35,7 @@ AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
 	m_btnClear->setStyleSheet("background-color:blue;");
 
 	
-	connect(ablum, SIGNAL(OneImgReady(BPixmap*)), this, SLOT(OneImgReady(BPixmap*)), Qt::QueuedConnection);
+	connect(m_ablum, SIGNAL(OneImgReady(BPixmap*)), this, SLOT(OneImgReady(BPixmap*)), Qt::QueuedConnection);
 
 	BPixmaps pixmaps = m_ablum->GetImages();
 	for (int i = 0; i < pixmaps.size(); ++i)
@@ -41,10 +46,14 @@ AblumManagerWidget::AblumManagerWidget(BAblum *ablum, QWidget *parent)
 		}
 
 	}
+	m_ablum->ContinueLoadImgs();
 }
 
 AblumManagerWidget::~AblumManagerWidget()
 {
+	
+	m_ablum->PauseLoadImgs();
+
 	QString path = GetSettingPath();
 	QSettings settings(GetSettingPath(), QSettings::IniFormat);
 	settings.setValue("AblumManagerWidget_pixmapDir", m_pixmapDir);
@@ -99,7 +108,7 @@ void AblumManagerWidget::BtnClicked()
 				pixmap.title = QFileInfo(path).completeBaseName();
 				pixmaps.push_back(pixmap);
 			}
-			m_ablum->AddImages(pixmaps);
+			m_ablum->LoadImgs(pixmaps);
 			m_pixmapDir = QFileInfo(paths.at(0)).absolutePath();
 		}
 	}
@@ -128,6 +137,21 @@ void AblumManagerWidget::paintEvent( QPaintEvent *event )
 {
 	//QPainter painter(this);
 	//painter.fillRect(rect(), QBrush(Qt::black));
+}
+
+
+
+void AblumManagerWidget::ItemClicked( int index )
+{
+	AblumViewer view(m_ablum, index, this);
+	view.LoadImage(AblumViewer::Img_Cur);
+	view.exec();
+	
+
+	//AblumViewer *view = new AblumViewer(m_ablum, index, this);
+	//view->LoadImage(AblumViewer::Img_Cur);
+	////view->showMaximized();
+	//view->exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -192,4 +216,20 @@ void AblumManagerView::paintEvent( QPaintEvent *event )
 {
 	//QPainter painter(this);
 	//painter.fillRect(rect(), QBrush(Qt::black));
+}
+
+void AblumManagerView::mousePressEvent( QMouseEvent *event )
+{
+	QWidget *item = childAt(event->pos());
+	if (item)
+	{
+		for (int i = 0; i < m_items.size(); ++i)
+		{
+			if (item == m_items.at(i))
+			{
+				emit ItemClicked(i);
+				break;
+			}
+		}
+	}
 }

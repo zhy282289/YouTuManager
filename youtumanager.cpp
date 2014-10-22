@@ -8,7 +8,7 @@
 YouDuManager::YouDuManager(QWidget *parent, Qt::WFlags flags)
 	: QWidget(parent, flags)
 {
-	
+	SetMainWidget(this);
 	setWindowTitle("YouTuManager");
 
 	// init global controller

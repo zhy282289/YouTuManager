@@ -19,12 +19,14 @@ protected:
 	void showEvent(QShowEvent *event);
 	void resizeEvent(QResizeEvent *event);
 	void paintEvent(QPaintEvent *event);
+	
 
 	void Update(int type);
 
 private slots:
 	void BtnClicked();
 	void OneImgReady(BPixmap *pixmap);
+	void ItemClicked(int index);
 
 private:
 	QPushButton	*m_btnAdd;
@@ -49,9 +51,13 @@ public:
 	void AddPixmap(const QImage &pixmap);
 	void Update(int type);
 
+signals:
+	void ItemClicked(int);
+
 protected:
 	void resizeEvent(QResizeEvent *event);
 	void paintEvent(QPaintEvent *event);
+	void mousePressEvent(QMouseEvent *event);
 
 private:
 	QList<QLabel*>	m_items;
