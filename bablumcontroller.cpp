@@ -15,10 +15,9 @@ BPixmap _LoadImage(const BPixmap &pixmap)
 BAblum::BAblum( const BPoint &point, QString title, QObject *parent )
 	:QObject(parent)
 {
-	m_point = point;
-	m_title = title;
+	m_ablumData.point = point;
+	m_ablumData.title = title;
 
-	m_hadLoad = false;
 
 	m_futureWatcher = new QFutureWatcher<BPixmap>(this);
 	connect(m_futureWatcher, SIGNAL(resultReadyAt(int)), this, SLOT(SlotResultReadyAt(int)));
@@ -27,11 +26,17 @@ BAblum::BAblum( const BPoint &point, QString title, QObject *parent )
 }
 
 
+BAblum::BAblum( QObject *parent /*= 0*/ )
+	:QObject(parent)
+{
+
+}
+
 
 
 BPoint BAblum::GetBPoint()
 {
-	return m_point;
+	return m_ablumData.point;
 }
 
 void BAblum::LoadImgs(const BPixmaps &pixmaps)
@@ -51,12 +56,12 @@ bool BAblum::HitHint( const BPoint &point ) const
 
 BPixmaps& BAblum::GetImages()
 {
-	return m_images;
+	return m_ablumData.images;
 }
 
 QString BAblum::GetTitle()
 {
-	return m_title;
+	return m_ablumData.title;
 }
 
 
@@ -70,7 +75,7 @@ void BAblum::StopLoadImgs()
 
 void BAblum::SlotOneImgReady( BPixmap *pixmap )
 {
-	m_images.push_back(*pixmap);
+	m_ablumData.images.push_back(*pixmap);
 	emit OneImgReady(pixmap);
 }
 
@@ -78,15 +83,15 @@ void BAblum::SlotOneImgReady( BPixmap *pixmap )
 
 BPixmap& BAblum::GetImage( unsigned index )
 {
-	Q_ASSERT(index < m_images.size());
-	return m_images[index];
+	Q_ASSERT(index < m_ablumData.images.size());
+	return m_ablumData.images[index];
 }
 
 void BAblum::SlotResultReadyAt( int index )
 {
 	BPixmap temp = m_futureWatcher->resultAt(index);
-	m_images.push_back(temp);
-	emit OneImgReady(&m_images.last());
+	m_ablumData.images.push_back(temp);
+	emit OneImgReady(&m_ablumData.images.last());
 }
 
 void BAblum::PauseLoadImgs()
@@ -105,11 +110,22 @@ void BAblum::ContinueLoadImgs()
 	}
 }
 
+const BAblumData& BAblum::GetAblumData()
+{
+	return m_ablumData;
+
+}
+
+void BAblum::SetAblumData( const BAblumData &data )
+{
+	m_ablumData = data;
+}
+
 //////////////////////////////////////////////////////////////////////////
 BAblumController::BAblumController( QObject *parent /*= 0*/ )
 	:QObject(parent)
 {
-
+	Load();
 }
 
 BAblumController::~BAblumController()
@@ -118,6 +134,8 @@ BAblumController::~BAblumController()
 	{
 		m_BAblums.at(i)->StopLoadImgs();
 	}
+
+	Save();
 }
 
 
@@ -164,6 +182,71 @@ BAblum* BAblumController::GetAblum( const BPoint &point )
 BAblums* BAblumController::GetAllAblum()
 {
 	return &m_BAblums;
+}
+
+bool BAblumController::Load()
+{
+	QString path = GetAppDir() + "youtumanager";
+
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		return false;
+	}
+
+
+	QDataStream stream(&file);
+	stream.setVersion(QDataStream::Qt_4_8);
+	QString boy;
+	stream >> boy;
+	if (boy != "BOY")
+	{
+		return false;
+	}
+	qint32 v;
+	stream >> v;
+	if (v != 1)
+	{
+		return false;
+	}
+
+	int size = 0;
+	stream >> size;
+	for (int i = 0; i < size; ++i)
+	{
+		BAblumData data;
+		stream >>data;
+		BAblum* bablum = new BAblum(data.point, data.title);
+		bablum->SetAblumData(data);
+		m_BAblums.push_back(bablum);
+	}
+
+	return true;
+}
+
+bool BAblumController::Save()
+{
+	QString path = GetAppDir() + "youtumanager";
+
+	QFile file(path);
+	if (!file.open(QIODevice::WriteOnly))
+	{
+		return false;
+	}
+
+
+	QDataStream steram(&file);
+	steram.setVersion(QDataStream::Qt_4_8);
+	QString boy("BOY");
+	steram << boy;
+	steram << (qint32(1));
+	steram << m_BAblums.size();
+	for (int i = 0; i < m_BAblums.size(); ++i)
+	{
+		steram << m_BAblums.at(i)->GetAblumData();
+	}
+
+	return true;
 }
 
 LoadImageThread::LoadImageThread( QObject *parent)

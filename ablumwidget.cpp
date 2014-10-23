@@ -11,7 +11,12 @@ AblumWidget::AblumWidget(QWidget *parent)
 	m_ablumController = BAblumController::GetInstance();
 	connect(m_ablumController, SIGNAL(NewAblum(BAblum*)), this, SLOT(AddAblumItem(BAblum*)));
 
-
+	BAblums *bablums = m_ablumController->GetAllAblum();
+	for (int i = 0; i < bablums->size(); ++i)
+	{
+		AblumWidgetItem *item = new AblumWidgetItem(bablums->at(i), this);
+		m_items.push_back(item);
+	}
 }
 
 AblumWidget::~AblumWidget()
@@ -55,6 +60,14 @@ void AblumWidget::Update()
 	}
 }
 
+void AblumWidget::showEvent( QShowEvent *event )
+{
+	for (int i = 0; i < m_items.size(); ++i)
+	{
+		m_items.at(i)->Update();
+	}
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -89,10 +102,10 @@ void AblumWidgetItem::Update()
 QPixmap AblumWidgetItem::GetFirstPixmap()
 {
 	QPixmap pixmap;
-	//if (!m_ablum->GetImages().isEmpty())
-	//{
-	//	pixmap = QPixmap::fromImage(m_ablum->GetImages().at(0).img);
-	//}
+	if (!m_ablum->GetImages().isEmpty())
+	{
+		pixmap = QPixmap::fromImage(m_ablum->GetImages().at(0).img);
+	}
 	return pixmap;
 }
 
@@ -105,8 +118,5 @@ void AblumWidgetItem::mousePressEvent( QMouseEvent *event )
 {
 	AblumManagerWidget ablumManagerWidget(m_ablum, this);
 	ablumManagerWidget.exec();
-
-	//AblumManagerWidget *ablumManagerWidget = new AblumManagerWidget(m_ablum, this);
-	//ablumManagerWidget->showMaximized();
-
+	Update();
 }

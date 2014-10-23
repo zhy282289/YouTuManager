@@ -5,12 +5,25 @@
 
 
 
+struct BAblumData
+{
+	BPixmaps		images;		// 图片
+	QString			title;		// 相册名称
+	BPoint			point;		// 地图上的坐标
+
+	friend QDataStream& operator >> (QDataStream &in, BAblumData &data);
+	friend QDataStream& operator << (QDataStream &out, const BAblumData &data);
+};
+Q_DECLARE_METATYPE(BAblumData)
+
+
 // 相册类
 class BAblum : public QObject
 {
 	Q_OBJECT
 public:
 	BAblum(const BPoint &point, QString title, QObject *parent = 0);
+	BAblum(QObject *parent = 0);
 
 	bool		HitHint(const BPoint &point) const;
 	BPixmaps&	GetImages();
@@ -21,6 +34,10 @@ public:
 	void		StopLoadImgs();
 	void		PauseLoadImgs();
 	void		ContinueLoadImgs();
+
+	const BAblumData& GetAblumData();
+	void		SetAblumData(const BAblumData &data);
+
 public:
 signals:
 	void	OneImgReady(BPixmap *pixmap);
@@ -29,10 +46,9 @@ private slots:
 	void	SlotOneImgReady(BPixmap *pixmap);
 	void	SlotResultReadyAt(int index);
 private:
-	BPixmaps		m_images;		// 图片
-	QString			m_title;		// 相册名称
-	BPoint			m_point;		// 地图上的坐标
-	bool			m_hadLoad;		// 是否加载完图片
+
+	BAblumData	m_ablumData;
+
 
 private:
 	QFutureWatcher<BPixmap>	*m_futureWatcher;
@@ -60,6 +76,8 @@ private:
 	BAblumController(QObject *parent = 0);
 	~BAblumController();
 
+	bool Load();
+	bool Save();
 
 private:
 	BAblums		m_BAblums;

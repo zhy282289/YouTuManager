@@ -13,6 +13,13 @@ QString GetSettingPath()
 }
 
 
+QString GetAppDir()
+{
+	return QApplication::applicationDirPath() + QDir::separator();
+}
+
+
+
 QFutureWatcher<BPixmap>	*g_futureWatcher = NULL;
 QFutureWatcher<BPixmap>	*GetLoadImgFutuerWatcher()
 {
@@ -32,4 +39,11 @@ void SetMainWidget( QWidget *widget )
 QWidget* GetMainWidget()
 {
 	return g_mainWidget;
+}
+
+void RegisterMetatype()
+{
+	qRegisterMetaTypeStreamOperators<BPoint>("BPoint");
+	qRegisterMetaTypeStreamOperators<BPixmap>("BPixmap");
+	//qRegisterMetaTypeStreamOperators<BAblum>("BAblum");
 }

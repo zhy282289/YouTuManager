@@ -5,12 +5,11 @@ AblumViewer::AblumViewer(BAblum *ablum, unsigned index, QWidget *parent)
 	: QDialog(parent)
 	, m_ablum(ablum)
 	, m_index(index)
-	,m_hadLoad(false)
 	,m_pixmap(0)
 {
 	setMouseTracking(true);
 	resize(parent->rect().size());
-	setWindowFlags(Qt::FramelessWindowHint);
+	setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 	setAttribute(Qt::WA_TranslucentBackground);
 	//setWindowModality(Qt::ApplicationModal);
 
@@ -123,7 +122,7 @@ void AblumViewer::LoadImage(int type)
 		m_index = m_index > m_ablum->GetImages().size()-1 ? 0 : m_index;
 	}
 
-	m_hadLoad = false;
+
 	if (m_LoadImageThread->isRunning())
 	{
 		m_LoadImageThread->wait();
@@ -148,7 +147,7 @@ void AblumViewer::LoadThreadFinish( QImage *img )
 	int imgh = qMin(m_pixmap->height(), screen.height());
 	*m_pixmap = m_pixmap->scaled(imgw, imgh, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-	m_hadLoad = true;
+
 	update();
 }
 

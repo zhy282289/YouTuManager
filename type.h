@@ -12,7 +12,12 @@ public:
 
 	BPoint(){lng=0.0;lat=0.0;}
 	BPoint(double lng, double lat){this->lng=lng;this->lat=lat;}
+
+	friend QDataStream& operator >> (QDataStream &in, BPoint &data);
+	friend QDataStream& operator << (QDataStream &out, const BPoint &data);
 };
+Q_DECLARE_METATYPE(BPoint)
+
 
 // Í¼Æ¬Àà
 class BPixmap
@@ -27,8 +32,11 @@ public:
 	{
 		return !img.isNull();
 	}
-
+	friend QDataStream& operator >> (QDataStream &in, BPixmap &data);
+	friend QDataStream& operator << (QDataStream &out, const BPixmap &data);
 };
+Q_DECLARE_METATYPE(BPixmap)
+
 typedef QList<BPixmap>	BPixmaps;
 
 

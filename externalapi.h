@@ -3,7 +3,7 @@
 
 
 
-
+void RegisterMetatype();
 
 QSize GetScreenSize();
 
@@ -11,6 +11,7 @@ void SetMainWidget(QWidget *widget);
 QWidget* GetMainWidget();
 
 QString GetSettingPath();
+QString GetAppDir();
 
 QFutureWatcher<BPixmap>	*GetLoadImgFutuerWatcher();
 

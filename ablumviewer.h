@@ -34,7 +34,6 @@ private:
 	BAblum	*m_ablum;
 	int m_index;
 	QImage	*m_pixmap;
-	bool m_hadLoad;
 	QLabel	*m_lbPixmap;
 
 	QPushButton	*m_btnClose;
